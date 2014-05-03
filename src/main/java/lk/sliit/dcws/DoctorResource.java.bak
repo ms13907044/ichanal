@@ -1,0 +1,185 @@
+package lk.sliit.dcws;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.text.DecimalFormat;
+
+/**
+ * Root resource (exposed at "doctors" path)
+ */
+@Path("doctors/")
+@Singleton
+public class DoctorResource {
+
+    private ArrayList<Doctor> doctors = new ArrayList<Doctor>();
+
+    /**
+     * Method handling HTTP GET requests for all Doctors. All available Doctor objects will be 
+     * concatenated together and sent to the client as "text/plain" media type.
+     *
+     * @return String that will be returned as a text/plain response.
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getDoctors() {
+        System.out.println("GET all Doctors (text)");
+        String result = "";
+        
+        if(this.doctors.size() == 0)
+            result = "none";
+        
+        for(Doctor doctor: this.doctors)
+        {
+            result += "ID = " + doctor.id + ", Name = " + doctor.name + System.getProperty("line.separator");
+        }
+        return result;
+    }
+
+    /**
+     * Method handling HTTP GET requests for all Doctors. The returned array of Doctor objects will be sent
+     * to the client as "application/json" media type.
+     *
+     * @return Array of Doctor objects that will be returned as an application/json response.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Doctor[] getDoctorsJson() {
+        System.out.println("GET all Doctors (JSON)");
+        Doctor[] result = new Doctor[1];
+        return this.doctors.toArray(result);
+    }
+
+    /**
+     * Method handling HTTP GET requests for all Doctors of the specified Specialization. 
+     * All matching Doctor objects will be concatenated together and sent to the client as "text/plain" media type.
+     *
+     * @return String that will be returned as a text/plain response.
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("specialization/{sp}")
+    public String getDoctorsBySpecialization(@PathParam("sp") String specialization) {
+        System.out.println("GET all Doctors by specialization (text): " + specialization);
+        String result = "";
+        
+        if(this.doctors.size() == 0)
+            result = "none";
+        
+        for(Doctor doctor: this.doctors)
+        {
+            if(doctor.specialization.toUpperCase().startsWith(specialization.toUpperCase()))
+                result += "ID = " + doctor.id + ", Name = " + doctor.name + System.getProperty("line.separator");
+        }
+        return result;
+    }
+
+    /**
+     * Method handling HTTP GET requests for all Doctors of the specified Specialization. 
+     * All matching Doctor objects will be concatenated together and sent to the client as "application/json" media type.
+     *
+     * @return Array of Doctor objects that will be returned as an application/json response.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("specialization/{sp}")
+    public Doctor[] getDoctorsBySpecializationJson(@PathParam("sp") String specialization) {
+        System.out.println("GET all Doctors by specialization (JSON): " + specialization);
+        ArrayList<Doctor> matches = new ArrayList<Doctor>();
+        Doctor[] result = new Doctor[1];
+
+        for(Doctor doctor: this.doctors)
+        {
+            if(doctor.specialization.toUpperCase().startsWith(specialization.toUpperCase()))
+                matches.add(doctor);
+        }
+
+        return matches.toArray(result);
+    }
+
+    // TODO: implement getDoctorsByLastName() matching path /ichannel/doctor/lastname/{lastname} 
+    // for both text and JSON. {lastname} should be a startsWith so that you could search for
+    // ichannel/doctor/lastname/jaya and get Jayasekara, Jayaratna, Jayawardena etc.
+    // 10% credit.
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("lastname/{lastname}")
+    public String getDoctorsByLastName(@PathParam("lastname") String lastname) {
+        System.out.println("GET all Doctors by lastname (text): " + lastname);
+        String result = "";
+        
+        if(this.doctors.size() == 0)
+            result = "none";
+        
+        for(Doctor lastname: this.lastname)
+        {
+            if(doctor.lastname.toUpperCase().startsWith(lastname.toUpperCase()))
+                result += "ID = " + doctor.id + ", Name = " + doctor.lastname + System.getProperty("line.separator");
+        }
+        return result;
+    }
+
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("lastname/{lastname}")
+    public Doctor[] getDoctorsByLastNameJson(@PathParam("lastname") String lastname) {
+        System.out.println("GET all Doctors by lastname (JSON): " + lastname);
+        ArrayList<Doctor> matches = new ArrayList<Doctor>();
+        Doctor[] result = new Doctor[1];
+
+        for(Doctor lastname: this.lastname)
+        {
+            if(doctor.lastname.toUpperCase().startsWith(lastname.toUpperCase()))
+                matches.add(doctor);
+        }
+
+        return matches.toArray(result);
+    }
+    
+
+    // TODO: implement getDoctorsByHospital() matching path /ichannel/doctor/hospital/{id} 
+    // for both text and JSON. {id} should be a hospital ID.
+    // 5% credit.
+
+    // TODO: implement createDoctor() for the HTTP POST action - 5% credit
+
+    // TODO: implement updateDoctor() for the HTTP PUT action - 5% credit 
+
+    // TODO: implement deleteDoctor() for the HTTP DELETE action - 5% credit
+
+    private Doctor findDoctor(String id)
+    {
+        for(Doctor doctor : this.doctors)
+        {
+            if(id.equalsIgnoreCase(doctor.id))
+            {
+                return doctor; 
+            }
+        }
+        return null;
+    }
+
+    private String getNextDoctorId()
+    {
+        DecimalFormat formatter = new DecimalFormat("doc000"); // we generate ID numbers and send it through this formatter to generate ID's
+
+        int test = this.doctors.size() + 1; // start with 1 when we're empty, or with the most likely next value in sequence
+        
+        // loop until we find the next unused ID to return
+        while(true)
+        {
+            String testId = formatter.format(test);
+            if(this.findDoctor(testId) == null)
+                return testId; // this ID is not in use so it's available!
+            else
+                test++; // it's in use, test the next value
+        }
+    }
+
+}
